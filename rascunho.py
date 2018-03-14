@@ -9,6 +9,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
+# implementar interacao do teclado e mouse
+from selenium.webdriver.common.action_chains import ActionChains
+
+#----------------------------------------
+
 #Selecionar navegador - GeckoDriver (FIREFOX)!
 firefox = webdriver.Firefox()
 firefox.get('https://www.derivative-calculator.net/')
@@ -33,7 +38,7 @@ print("[DEBUG] Enviou expressao!")
 
 try:
 	# Apertar "Show Steps"
-	wait01 = WebDriverWait(firefox, 10).until(
+	wait01 = WebDriverWait(firefox, 15).until(
 
 		#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
 
@@ -42,8 +47,15 @@ try:
 
 finally:
 	print("[DEBUG] Esperar antes de apertar Show Steps")
-	wait02 = WebDriverWait(firefox, 5)
-	show_steps_link = firefox.find_element_by_class_name('show-steps-button')
+	WebDriverWait(firefox, 15)	
 
+print("[DEBUG] Saiu do finally!")
+
+show_steps_button = firefox.find_element_by_class_name('show-steps-button')
+
+actions = ActionChains(firefox)
+actions.move_to_element(show_steps_button)
+actions.click(show_steps_button)
+actions.perform()
 
 print("Funcionou?")
