@@ -81,6 +81,29 @@ def capture_element(element,driver):
 	
 	imagem.save('screenshot.png')
 	
+	# http://matthiaseisen.com/pp/patterns/p0202/
+	#100px * 150px, starting in the center
+
+	#AttributeError: 'bytes' object has no attribute 'size'
+
+	half_the_width  = imagem.size[0] / 2
+	half_the_height = imagem.size[1] / 2
+	
+	desired_width   = 256
+	desired_height  = 256
+	
+	h_offset = 48
+	
+	img4 = imagem.crop(
+	    (
+	    	half_the_width - desired_width/2,
+ 	       	half_the_height - desired_height/2 - 2 * h_offset,
+ 	       	half_the_width + desired_width/2,
+        	half_the_height + desired_height/2 - 1.5 * h_offset
+ 	   )
+	)
+	
+	img4.save("img4.png")
 
 
 
