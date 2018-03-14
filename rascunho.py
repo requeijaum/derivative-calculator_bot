@@ -1,5 +1,8 @@
 # Criado por Rafael F S Requiao @ Python 3.6.4 (brew) - macOS 10.11
 
+
+import os, sys, string
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
@@ -18,99 +21,14 @@ import time
 
 from selenium.common.exceptions import TimeoutException
 timeout = 20
+esperar = 5
 
-
-# melhorar screenshots
-#https://stackoverflow.com/questions/15018372/how-to-take-partial-screenshot-with-selenium-webdriver-in-python
-
-from PIL import Image
-#from StringIO import StringIO
-from io import StringIO, BytesIO
-
-def capture_element(element,driver):
-
-	print("[DEBUG] capture_element()")
-	print(element.location)
-	print(element.size)
-
-	location = element.location
-	size = element.size
-		
-	#img = driver.get_screenshot_as_png()
-	img = bode.screenshot_as_png
+def clear_screen():
+	os.system('cls' if os.name=='nt' else 'clear')
 	
-	#testar objeto img
-	
-	#img = Image.open(StringIO(img))
-	#Erro aqui --> TypeError: initial_value must be str or None, not bytes 
-	#https://stackoverflow.com/questions/31064981/python3-error-initial-value-must-be-str-or-none
-	
-	imagem = Image.open(BytesIO(img))
-	
-	#arrendondar locations?
-	
-	left   = location['x']
-	top    = location['y']
-	right  = location['x'] + size['width']
-	bottom = location['y'] + size['height']
-	
-	print(left)
-	print(top)
-	print(right)
-	print(bottom)	
-
-	#img.save("screenshot_original.png")
-	#AttributeError: 'bytes' object has no attribute 'save'
-
-	imagem.save("screenshot_uncropped.png")
-
-	#https://w3c.github.io/webdriver/webdriver-spec.html#dfn-take-screenshot
-	#não precisa fazer crop se não dá pra capturar a tela inteira...
-	
-	#tentar fazer crop do element body e depois cropar?
-	
-	imagem = imagem.crop((int(left), int(top), int(right), int(bottom)))
-	
-	#cropar de novo pra corrigir a cagada
-	aeho   = int(top)
-	aeho  += aeho/2
-	print(aeho)
-	
-	#SystemError: tile cannot extend outside image
-	imagem = imagem.crop((0, int(aeho), int(size['width']), int(size['height']) ))
-	
-	imagem.save('screenshot.png')
-	
-	# http://matthiaseisen.com/pp/patterns/p0202/
-	#100px * 150px, starting in the center
-
-	#AttributeError: 'bytes' object has no attribute 'size'
-
-	half_the_width  = imagem.size[0] / 2
-	half_the_height = imagem.size[1] / 2
-	
-	desired_width   = 256
-	desired_height  = 256
-	
-	h_offset = 48
-	
-	img4 = imagem.crop(
-	    (
-	    	half_the_width - desired_width/2,
- 	       	half_the_height - desired_height/2 - 2 * h_offset,
- 	       	half_the_width + desired_width/2,
-        	half_the_height + desired_height/2 - 1.5 * h_offset
- 	   )
-	)
-	
-	img4.save("img4.png")
-
-
-
-#fim da funcao capture_element()
-
-
 #----------------------------------------
+
+clear_screen()
 
 #Selecionar navegador - GeckoDriver (FIREFOX)!
 print("[DEBUG] webdriver.Firefox()")
@@ -158,7 +76,7 @@ try:
 
 finally:
 	print("[DEBUG] Esperar antes de apertar Show Steps")
-	time.sleep(3)
+	time.sleep(1)
 
 print("[DEBUG] Saiu do finally!")
 
@@ -183,7 +101,7 @@ finally:
         print("[DEBUG] Esperar antes de obter calculos...")
 
 
-time.sleep(10)
+time.sleep(esperar)
 
 # Capturar dados de resultado para objeto Selenium
 #calculos_element = firefox.find_element_by_class_name("calc-content")
@@ -209,35 +127,62 @@ time.sleep(10)
 bode = firefox.find_element_by_xpath('//body')
 
 #Parece que descer teclas buga tudo
-#print("[DEBUG] Descer a tela...")
-#for i in range(0,7) :
-#	bode.send_keys(u'\ue015')
+print("[DEBUG] Descer a tela...")
+for i in range(0,7) :
+	bode.send_keys(u'\ue015')
+
+#fim do for loop
 
 
-#Verificar offset da pagina... nao to conseguindo tirar foto do que eu quero
-#https://stackoverflow.com/questions/15018372/how-to-take-partial-screenshot-with-selenium-webdriver-in-python
+print("[DEBUG] obter todos os div.calc-math e meter numa lista")
 
-#tirar_foto = "result"
-#tirar_foto = "calc"
+#try:
+#calculos_element = 	firefox.find_elements_by_class_name(
+#						"calc-math"
+#					)
 
-tirar_foto = "result"
-
-
-calculos_element = firefox.find_element_by_id(tirar_foto)
-
-print("[DEBUG] Achou elemento cuja id = " + tirar_foto + "")
-print("[DEBUG] element.tag_name = " + calculos_element.tag_name )
-
-
+calculos_element = 	firefox.find_elements_by_xpath(
+						"//div[@class='calc-math']"
+					)
+					
 # Tratar objeto Selenium antes de imprimir
-#calculos = [x.calculos for x in calculos_element]
+#calculos = [x.calculos for x in calculos_element.get_attribute("script")]
+					
+#except:
+#print("[DEBUG] erro... sem calc-math... :( ")
 
-print("[DEBUG] Tirar screenshot do resultado...")
-#calculos_element.screenshot("foo.png")
+#print("[DEBUG] print(calculos)")
+#for temp in calculos_element:
+#	print(temp)
+#	print(temp.text)
 
-capture_element(calculos_element,firefox)
 
+#print("[DEBUG] print(calculos)")
+#print(calculos)
+
+
+#pegar TeX de cada calc-math - element <script> ; type="math/tex"
+indice=0
+print("[DEBUG] print(tex)")
+for calculo in calculos_element:
+
+		print("indice = " + str(indice))
+		calculado = calculo.find_element_by_tag_name("script")
+		#print("calculo = " + str(calculo))
+		
+		#cuspir calculo.text --> bytearray!
+		print("calculo.text = " + str(calculo.text))
+		
+		#print("calculado = " + str(calculado))
+		#print("calculado.text = " + str(calculado.text))
+		#print(calculado.get_property)
+		#print(calculado.get_property.text)		
+		indice += 1
+		
+#fim do for loop
+		
+indice=0
 
 print("[DEBUG] Desligando...")
-time.sleep(5)
+time.sleep(esperar)
 firefox.quit()
