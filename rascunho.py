@@ -19,11 +19,31 @@ import time
 from selenium.common.exceptions import TimeoutException
 timeout = 20
 
+
+# melhorar screenshots
+#https://stackoverflow.com/questions/15018372/how-to-take-partial-screenshot-with-selenium-webdriver-in-python
+
+from PIL import Image
+#from StringIO import StringIO
+from io import StringIO
+
+def capture_element(element,driver):
+	location = element.location
+	size = element.size
+	img = driver.get_screenshot_as_png()
+	img = Image.open(StringIO(img))
+	left = location['x']
+	top = location['y']
+	right = location['x'] + size['width']
+	bottom = location['y'] + size['height']
+	img = img.crop((int(left), int(top), int(right), int(bottom)))
+	img.save('screenshot.png')
+
 #----------------------------------------
 
 #Selecionar navegador - GeckoDriver (FIREFOX)!
 print("[DEBUG] webdriver.Firefox()")
-firefox = webdriver.Firefox()
+firefox = webdriver.Firefox(log_path="/tmp/geckolog.log")
 
 # setar tamanho legal pra visualizar a janela
 firefox.set_window_size(1280,720)
@@ -122,18 +142,30 @@ for i in range(0,7) :
 	desce.send_keys(u'\ue015')
 
 
+#Verificar offset da pagina... nao to conseguindo tirar foto do que eu quero
+#https://stackoverflow.com/questions/15018372/how-to-take-partial-screenshot-with-selenium-webdriver-in-python
+
+#tirar_foto = "result"
+#tirar_foto = "calc"
+
 tirar_foto = "result"
+
 
 calculos_element = firefox.find_element_by_id(tirar_foto)
 
-print("[DEBUG] Achou elemento cuja id=\"+ tirar_foto +\" !")
-
+print("[DEBUG] Achou elemento cuja id = " + tirar_foto + "")
+print("[DEBUG] element.tag_name = " + calculos_element.tag_name )
 
 
 # Tratar objeto Selenium antes de imprimir
 #calculos = [x.calculos for x in calculos_element]
 
 print("[DEBUG] Tirar screenshot do resultado...")
-calculos_element.screenshot("foo.png")
+#calculos_element.screenshot("foo.png")
+
+capture_element(calculos_element,firefox)
 
 
+print("[DEBUG] Desligando...")
+time.sleep(5)
+firefox.quit()
