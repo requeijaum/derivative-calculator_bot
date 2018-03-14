@@ -21,7 +21,7 @@ import time
 
 from selenium.common.exceptions import TimeoutException
 timeout = 20
-esperar = 5
+esperar = 10
 
 def clear_screen():
 	os.system('cls' if os.name=='nt' else 'clear')
@@ -166,12 +166,16 @@ indice=0
 print("[DEBUG] print(tex)")
 for calculo in calculos_element:
 
-		print("indice = " + str(indice))
+		
 		calculado = calculo.find_element_by_tag_name("script")
 		#print("calculo = " + str(calculo))
 		
+		lista_split = calculo.text.split("\n")
+		tex = ("").join(lista_split)
+		print("indice = " + str(indice) + " --> " + tex)
+				
 		#cuspir calculo.text --> bytearray!
-		print("calculo.text = " + str(calculo.text))
+		#print("calculo.text = " + str(calculo.text))
 		
 		#print("calculado = " + str(calculado))
 		#print("calculado.text = " + str(calculado.text))
@@ -183,6 +187,6 @@ for calculo in calculos_element:
 		
 indice=0
 
-print("[DEBUG] Desligando...")
-time.sleep(esperar)
-firefox.quit()
+#print("[DEBUG] Desligando...")
+#time.sleep(esperar)
+#firefox.quit()
