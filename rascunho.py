@@ -1,7 +1,7 @@
 # Criado por Rafael F S Requiao @ Python 3.6.4 (brew) - macOS 10.11
 
 
-import os, sys, string
+import os, sys, string, codecs
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -145,42 +145,32 @@ calculos_element = 	firefox.find_elements_by_xpath(
 						"//div[@class='calc-math']"
 					)
 					
-# Tratar objeto Selenium antes de imprimir
-#calculos = [x.calculos for x in calculos_element.get_attribute("script")]
+# Tratar elemento do Firefox antes de imprimir
 					
 #except:
 #print("[DEBUG] erro... sem calc-math... :( ")
 
-#print("[DEBUG] print(calculos)")
-#for temp in calculos_element:
-#	print(temp)
-#	print(temp.text)
-
-
-#print("[DEBUG] print(calculos)")
-#print(calculos)
 
 
 #pegar TeX de cada calc-math - element <script> ; type="math/tex"
 indice=0
 print("[DEBUG] print(tex)")
 for calculo in calculos_element:
-
 		
-		calculado = calculo.find_element_by_tag_name("script")
-		#print("calculo = " + str(calculo))
+		#DEBUG
+		#só existe o método .text na classe WebElement... pelo visto...
+		#temp = bytes(calculo.text)	
+		temp = codecs.encode(calculo.text , 'utf-8')
+		atributo1 = calculo.get_attribute("id")
+		atributo2 = calculo.get_attribute("type")
 		
-		lista_split = calculo.text.split("\n")
-		tex = ("").join(lista_split)
-		print("indice = " + str(indice) + " --> " + tex)
-				
-		#cuspir calculo.text --> bytearray!
-		#print("calculo.text = " + str(calculo.text))
+		print("indice = " + str(indice) + " " + str(atributo1) + " " + str(atributo2) + " --> " + str(temp))
 		
-		#print("calculado = " + str(calculado))
-		#print("calculado.text = " + str(calculado.text))
-		#print(calculado.get_property)
-		#print(calculado.get_property.text)		
+		#WORKING?
+		#lista_split = calculo.text.split("\n")
+		#tex = ("").join(lista_split)
+		#print("indice = " + str(indice) + " --> " + tex)
+		
 		indice += 1
 		
 #fim do for loop
