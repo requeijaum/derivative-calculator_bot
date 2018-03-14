@@ -32,23 +32,50 @@ def capture_element(element,driver):
 	print("[DEBUG] capture_element()")
 	print(element.location)
 	print(element.size)
-	print(left + top + right + bottom)
+	
 	
 	location = element.location
 	size = element.size
 	img = driver.get_screenshot_as_png()
+	
+	#testar objeto img
+	
 	#img = Image.open(StringIO(img))
 	#erro aqui --> TypeError: initial_value must be str or None, not bytes 
 	#--> https://stackoverflow.com/questions/31064981/python3-error-initial-value-must-be-str-or-none
 	
-	img = Image.open(BytesIO(img))
+	imagem = Image.open(BytesIO(img))
 	
-	left = location['x']
-	top = location['y']
-	right = location['x'] + size['width']
-	bottom = location['y'] + size['height']
-	img = img.crop((int(left), int(top), int(right), int(bottom)))
-	img.save('screenshot.png')
+	#arrendondar locations?
+	
+	#left = int(location['x'])
+	#top = int(location['y'])
+	#right = int(location['x'] + size['width'])
+	#bottom = int(location['y'] + size['height'])
+	
+	#print(left)
+	#print(top)
+	#print(right)
+	#print(bottom)	
+
+	#img.save("screenshot_original.png")
+	#AttributeError: 'bytes' object has no attribute 'save'
+
+	imagem.save("screenshot_uncropped.png")
+
+	#https://w3c.github.io/webdriver/webdriver-spec.html#dfn-take-screenshot
+	#não precisa fazer crop se não dá pra capturar a tela inteira...
+	
+	#tentar fazer crop do element body e depois cropar?
+	
+	#imagem = imagem.crop((int(left), int(top), int(right), int(bottom)))
+	#imagem.save('screenshot.png')
+	
+
+
+
+#fim da funcao capture_element()
+
 
 #----------------------------------------
 
