@@ -32,31 +32,32 @@ def capture_element(element,driver):
 	print("[DEBUG] capture_element()")
 	print(element.location)
 	print(element.size)
-	
-	
+
 	location = element.location
 	size = element.size
-	img = driver.get_screenshot_as_png()
+		
+	#img = driver.get_screenshot_as_png()
+	img = bode.screenshot_as_png
 	
 	#testar objeto img
 	
 	#img = Image.open(StringIO(img))
-	#erro aqui --> TypeError: initial_value must be str or None, not bytes 
-	#--> https://stackoverflow.com/questions/31064981/python3-error-initial-value-must-be-str-or-none
+	#Erro aqui --> TypeError: initial_value must be str or None, not bytes 
+	#https://stackoverflow.com/questions/31064981/python3-error-initial-value-must-be-str-or-none
 	
 	imagem = Image.open(BytesIO(img))
 	
 	#arrendondar locations?
 	
-	#left = int(location['x'])
-	#top = int(location['y'])
-	#right = int(location['x'] + size['width'])
-	#bottom = int(location['y'] + size['height'])
+	left   = location['x']
+	top    = location['y']
+	right  = location['x'] + size['width']
+	bottom = location['y'] + size['height']
 	
-	#print(left)
-	#print(top)
-	#print(right)
-	#print(bottom)	
+	print(left)
+	print(top)
+	print(right)
+	print(bottom)	
 
 	#img.save("screenshot_original.png")
 	#AttributeError: 'bytes' object has no attribute 'save'
@@ -68,8 +69,17 @@ def capture_element(element,driver):
 	
 	#tentar fazer crop do element body e depois cropar?
 	
-	#imagem = imagem.crop((int(left), int(top), int(right), int(bottom)))
-	#imagem.save('screenshot.png')
+	imagem = imagem.crop((int(left), int(top), int(right), int(bottom)))
+	
+	#cropar de novo pra corrigir a cagada
+	aeho   = int(top)
+	aeho  += aeho/2
+	print(aeho)
+	
+	#SystemError: tile cannot extend outside image
+	imagem = imagem.crop((0, int(aeho), int(size['width']), int(size['height']) ))
+	
+	imagem.save('screenshot.png')
 	
 
 
@@ -173,11 +183,12 @@ time.sleep(10)
 #touch.perform()
 
 #https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
-print("[DEBUG] Descer a tela...")
-desce = firefox.find_element_by_xpath('//body')
+bode = firefox.find_element_by_xpath('//body')
 
-for i in range(0,7) :
-	desce.send_keys(u'\ue015')
+#Parece que descer teclas buga tudo
+#print("[DEBUG] Descer a tela...")
+#for i in range(0,7) :
+#	bode.send_keys(u'\ue015')
 
 
 #Verificar offset da pagina... nao to conseguindo tirar foto do que eu quero
