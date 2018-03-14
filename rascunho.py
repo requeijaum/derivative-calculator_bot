@@ -1,4 +1,4 @@
-# Criado por Rafael F S Requiao
+# Criado por Rafael F S Requiao @ Python 3.6.4 (brew) - macOS 10.11
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -25,13 +25,24 @@ timeout = 20
 
 from PIL import Image
 #from StringIO import StringIO
-from io import StringIO
+from io import StringIO, BytesIO
 
 def capture_element(element,driver):
+
+	print("[DEBUG] capture_element()")
+	print(element.location)
+	print(element.size)
+	print(left + top + right + bottom)
+	
 	location = element.location
 	size = element.size
 	img = driver.get_screenshot_as_png()
-	img = Image.open(StringIO(img))
+	#img = Image.open(StringIO(img))
+	#erro aqui --> TypeError: initial_value must be str or None, not bytes 
+	#--> https://stackoverflow.com/questions/31064981/python3-error-initial-value-must-be-str-or-none
+	
+	img = Image.open(BytesIO(img))
+	
 	left = location['x']
 	top = location['y']
 	right = location['x'] + size['width']
@@ -43,7 +54,7 @@ def capture_element(element,driver):
 
 #Selecionar navegador - GeckoDriver (FIREFOX)!
 print("[DEBUG] webdriver.Firefox()")
-firefox = webdriver.Firefox(log_path="/tmp/geckolog.log")
+firefox = webdriver.Firefox(timeout=timeout, log_path="/tmp/geckolog.log")
 
 # setar tamanho legal pra visualizar a janela
 firefox.set_window_size(1280,720)
