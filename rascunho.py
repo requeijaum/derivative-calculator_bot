@@ -27,10 +27,24 @@ from selenium.common.exceptions import TimeoutException
 timeout = 20
 esperar = 10
 
+#----------------------------------------
+
+# FUNÇÕES
+
 def clear_screen():
 	os.system('cls' if os.name=='nt' else 'clear')
 	
 #----------------------------------------
+
+# VARIÁVEIS GLOBAIS
+
+global resolucao_steps
+
+
+
+#----------------------------------------
+
+# PROGRAMA PRINCIPAL
 
 clear_screen()
 
@@ -41,6 +55,8 @@ firefox = webdriver.Firefox(timeout=timeout, log_path="/tmp/geckolog.log")
 # setar tamanho legal pra visualizar a janela
 firefox.set_window_size(1280,720)
 print(firefox.get_window_size())
+#setar posicao da janela?
+
 
 
 #try:
@@ -143,54 +159,70 @@ for i in range(0,7) :
 
 print("[DEBUG] obter todos os div.calc-math e meter numa lista")
 
-#try:
-#calculos_element = 	firefox.find_elements_by_class_name(
-#						"calc-math"
-#					)
+try:
+	calculos_element = 	firefox.find_elements_by_class_name(
+							"calc-math"
+						)
 
 #calculos_element = 	firefox.find_elements_by_xpath(
 #						#"//div[@class='calc-math']"  #TeX
 #						"//span[@id='MathJax*']"
 #					)
 					
+
 # DEBUG MathML
 # limitar melhor o que aparece dentro daquele div.calc-math
 # to pegando coisas de fora
-calculos_element = 	firefox.find_elements_by_class_name("mjx-chtml")					
+#calculos_element = 	firefox.find_elements_by_class_name("mjx-chtml")					
 					
 					
 # Tratar elemento do Firefox antes de imprimir
 					
-#except:
-#print("[DEBUG] erro... sem calc-math... :( ")
+except:
+	print("[DEBUG] erro... sem calc-math... :( ")
 
 
 
 #pegar TeX de cada calc-math - element <script> ; type="math/tex"
 indice=0
-print("[DEBUG] print(MathML)")
+resolucao_steps=[]
+print("[DEBUG] print(tex)")
+#print("[DEBUG] print(MathML)")
+
 for calculo in calculos_element:
 		
 		#DEBUG TeX
-		#só existe o método .text na classe WebElement... pelo visto...
 			
-		#temp = codecs.encode(calculo.text , 'utf-8')
+		temp = codecs.encode(calculo.text , 'utf-8')
 		#atributo1 = calculo.get_attribute("id")
 		#atributo2 = calculo.get_attribute("type")
 		#print("indice = " + str(indice) + " " + str(atributo1) + " " + str(atributo2) + " --> " + str(temp))
 		
-		#WIP TeX ?
+		#WIP TeX - método #01
+		#pré-processar calculo.text
+		#só existe o método .text na classe WebElement...?
+		#posso usar algum get (innerHTML/outerHTML)?
+		tex = calculo.find_element_by_tag_name("script").get_attribute("innerHTML")
+		
+		#WIP TeX - método #02
 		#lista_split = calculo.text.split("\n")
 		#tex = ("").join(lista_split)
+		
+		#mandar cada tex pra uma lista...
+		
+		resolucao_steps.append(tex)
+		
 		#print("indice = " + str(indice) + " --> " + tex)
 		
 		#-------------------------
 				
 		#DEBUG MathML
 		
-		mathml = codecs.encode(calculo.get_attribute("data-mathml") , 'utf-8')
-		print("indice = " + str(indice) + " --> " + str(mathml))
-
+		#mathml = codecs.encode(calculo.get_attribute("data-mathml") , 'utf-8')
+		#print("indice = " + str(indice) + " --> " + str(mathml))
+		
+		#--------------------------
+		
 		indice += 1
 		
 #fim do for loop
@@ -199,39 +231,38 @@ indice=0
 
 #----------------------------------------------
 
-# Converter MathML pra TeX
+# Converter MathML pra TeX - incompleto/não usar
 # invocar o mathconverter do oerpub
 # Não... muito trabalho.
 # Só renderizar o MathML tá bom demais!
 # Usar benetech.github.io/mmlc-api
 
-import requests, click
+#import requests, click
 
-from lxml import etree
+#from lxml import etree
 
 
 # mathtype = "mathml"
 
-def _call_mathml_cloud(equation, mathtype):
-    """ the HTTP POST to MathMLCloud server """
-    try:
-        resp = requests.post('https://api.mathmlcloud.org/equation',
-                             {'math': equation, 'mathType': mathtype, 'mml': 'true', 'description': 'true'})
-        data = resp.json()
-        try:
-            mathml = data['components'][0]['source']
-            return mathml
-        except IndexError:
-            # bug in MathML Cloud. It sometimes returns 200 but no result
-            # (bummer).
-            return 'null'
-    except Exception, err:
-        sys.stderr.write('MathML Cloud ERROR: %sn' % str(err))
-        sys.exit(2)
+#-----------------------------------------------
+
+
+# Imprimir lista
+
+for i in range(0, len(resolucao_steps)):
+	print(resolucao_steps[i] + "\n")
         
 
-        
 
+# obter simplificação
+
+
+# obter gráfico
+
+
+# exportar tudo pra TeX em PDF
+
+import tex
 
 
 print("[DEBUG] Desligando...")
