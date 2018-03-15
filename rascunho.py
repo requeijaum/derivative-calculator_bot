@@ -4,8 +4,11 @@
 
 # Criado por Rafael F S Requiao @ Python 3.6.4 (brew) - macOS 10.11
 
+#----------------------------------------
 
-import os, sys, string, codecs, re
+# IMPORTS
+
+import os, sys, string, time, codecs, re, click
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -15,21 +18,45 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-
 # implementar interacao do teclado e mouse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.touch_actions import TouchActions
-
-# implementar timeout handling
-import time
 
 from selenium.common.exceptions import TimeoutException
 timeout = 20
 esperar = 10
 
+
+#----------------------------------------
+
+# VARIÁVEIS GLOBAIS
+
+global resolucao_steps
+global expressao
+expressao = ""
+
+global math_type
+math_type = ""
+
+#global input_formats = ['asciimath', 'latex', 'mathml']
+
+global output_formats
+output_formats = ['tex', 'mathml']
+
+
+
 #----------------------------------------
 
 # FUNÇÕES
+
+
+def ClickComando(equation, format):
+	global expressao
+	global math_type	
+
+	math_type = format
+	expressao = equation
+
 
 def LimparTela():
 	os.system('cls' if os.name=='nt' else 'clear')
@@ -47,32 +74,40 @@ def DesceJanelaUmPouco(num):
 #fim de DesceJanelaUmPouco()
 
 
-def Resolucao():
+def Resolucao(math_type):
 	global resolucao_steps
 	
 	print("[DEBUG] obter todos os div.calc-math e meter numa lista")
 
-	try:
-		calculos_element = 	firefox.find_elements_by_class_name(
-								"calc-math"
-							)
+	if math_type is "tex":
+	
+		try:
+			calculos_element = 	firefox.find_elements_by_class_name(
+									"calc-math"
+								)
 
-	#calculos_element = 	firefox.find_elements_by_xpath(
-	#						#"//div[@class='calc-math']"  #TeX
-	#						"//span[@id='MathJax*']"
-	#					)
+		#calculos_element = 	firefox.find_elements_by_xpath(
+		#						#"//div[@class='calc-math']"  #TeX
+		#						"//span[@id='MathJax*']"
+		#					)
+										
+		# Tratar elemento do Firefox antes de imprimir
 					
+		except:
+			print("[DEBUG] erro... sem calc-math... :( ")
 
-	# DEBUG MathML
-	# limitar melhor o que aparece dentro daquele div.calc-math
-	# to pegando coisas de fora
-	#calculos_element = 	firefox.find_elements_by_class_name("mjx-chtml")					
-					
-					
-	# Tratar elemento do Firefox antes de imprimir
-					
-	except:
-		print("[DEBUG] erro... sem calc-math... :( ")
+
+	if math_type is "mathml":
+	
+		try:
+			# DEBUG MathML
+			# limitar melhor o que aparece dentro daquele div.calc-math
+			# to pegando coisas de fora
+			calculos_element = 	firefox.find_elements_by_class_name("mjx-chtml")
+	
+		except:
+			print("[DEBUG] erro... sem mjx-chtml... :( ")
+
 
 
 
@@ -85,39 +120,43 @@ def Resolucao():
 
 	for calculo in calculos_element:
 		
-			#DEBUG TeX
+		if math_type is "tex" :
+		
+				#DEBUG TeX
 			
-			temp = codecs.encode(calculo.text , 'utf-8')
-			#atributo1 = calculo.get_attribute("id")
-			#atributo2 = calculo.get_attribute("type")
-			#print("indice = " + str(indice) + " " + str(atributo1) + " " + str(atributo2) + " --> " + str(temp))
+				temp = codecs.encode(calculo.text , 'utf-8')
+				#atributo1 = calculo.get_attribute("id")
+				#atributo2 = calculo.get_attribute("type")
+				#print("indice = " + str(indice) + " " + str(atributo1) + " " + str(atributo2) + " --> " + str(temp))
 		
-			#WIP TeX - método #01
-			#pré-processar calculo.text
-			#só existe o método .text na classe WebElement...?
-			#posso usar algum get (innerHTML/outerHTML)?
-			tex = calculo.find_element_by_tag_name("script").get_attribute("innerHTML")
+				#WIP TeX - método #01
+				#pré-processar calculo.text
+				#só existe o método .text na classe WebElement...?
+				#posso usar algum get (innerHTML/outerHTML)?
+				tex = calculo.find_element_by_tag_name("script").get_attribute("innerHTML")
 		
-			#WIP TeX - método #02
-			#lista_split = calculo.text.split("\n")
-			#tex = ("").join(lista_split)
+				#WIP TeX - método #02
+				#lista_split = calculo.text.split("\n")
+				#tex = ("").join(lista_split)
 		
-			#mandar cada tex pra uma lista...
+				#mandar cada tex pra uma lista...
 		
-			resolucao_steps.append(tex)
+				resolucao_steps.append(tex)
 		
-			#print("indice = " + str(indice) + " --> " + tex)
+				#print("indice = " + str(indice) + " --> " + tex)
+				indice += 1
 		
 			#-------------------------
+
+		if math_type is "mathml" :
 				
-			#DEBUG MathML
+				#DEBUG MathML
 		
-			#mathml = codecs.encode(calculo.get_attribute("data-mathml") , 'utf-8')
-			#print("indice = " + str(indice) + " --> " + str(mathml))
-		
-			#--------------------------
-		
-			indice += 1
+				mathml = codecs.encode(calculo.get_attribute("data-mathml") , 'utf-8')
+				print("indice = " + str(indice) + " --> " + str(mathml))
+				indice += 1
+		#--------------------------
+
 		
 	#fim do for loop
 	indice=0		
@@ -128,52 +167,75 @@ def Resolucao():
 def CorrigirResolucao():
 	global resolucao_steps
 	n = 0
+
+
+	if math_type is "tex" :
 	
-	#corrige o TeX obtido
-	#lembre-se do caracter especial "\" - precisarei de dois
-	#ler "correcoes_tex_capturado.txt"
-	for i in range(0, len(resolucao_steps)):
+	
+		print("[DEBUG] CorrigirResolucao em tex")	
+		#corrige o TeX obtido
+		#lembre-se do caracter especial "\" - precisarei de dois
+		#ler "correcoes_tex_capturado.txt"
 		
-		#correcao #01
-		resolucao_steps[i] = resolucao_steps[i].replace("\\dfrac", "\\frac")
-		resolucao_steps[i] = resolucao_steps[i].replace("\\tfrac", "\\frac")
 		
-		#correcao #02
-		#parece que str.strip() come parte do texto
-		#b = b.replace("\\class{steps-node}" , "")
-		resolucao_steps[i] = resolucao_steps[i].replace("\\class{steps-node}" , "")
-		resolucao_steps[i] = resolucao_steps[i].replace("{}" , "")
+		for i in range(0, len(resolucao_steps)):
+			print ("[DEBUG] i = " + str(i))
 		
-		#usar re.sub()
+			#correcao #01
+			resolucao_steps[i] = resolucao_steps[i].replace("\\dfrac", "\\frac")
+			resolucao_steps[i] = resolucao_steps[i].replace("\\tfrac", "\\frac")
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
 		
-		#b = re.sub(r"{.cssId", "" , b)
-		#b = re.sub(r".steps-node-.\}", "" , b)
+			#correcao #02
+			#parece que str.strip() come parte do texto
+			#b = b.replace("\\class{steps-node}" , "")
+			resolucao_steps[i] = resolucao_steps[i].replace("\\class{steps-node}" , "")
+			resolucao_steps[i] = resolucao_steps[i].replace("{}" , "")
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
 		
-		pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
-		resolucao_steps[i] = pega[0]
-		n += pega[1]
+			#usar re.sub()
+			#b = re.sub(r"{.cssId", "" , b)
+			#b = re.sub(r".steps-node-.\}", "" , b)
 		
-		pega = re.sub(r".steps-node-.\}", "" , resolucao_steps[i])
-		pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
-		resolucao_steps[i] = pega[0]
-		n += pega[1]		
+			pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
+			resolucao_steps[i] = pega[0]
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			n += pega[1]
+			print("[DEBUG] n #01 = " + str(n))
 		
-		#limpar "}" dos cssID
-		print("[DEBUG] limpou o #" + str(i) + " " + str(n) + "vezes")
-		resolucao_steps[i] = re.sub( "}", "" , resolucao_steps[i], count=n)
+			pega = re.subn(r".steps-node-.\}", "" , resolucao_steps[i])
+			resolucao_steps[i] = pega[0]
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			n += pega[1]
+			print("[DEBUG] n #02 = " + str(n))		
 		
-		#zerar a cada expressao
-		n=0
+			#limpar "}" dos cssID
+			if n != 0 :
+				resolucao_steps[i] = re.sub( "}", "" , resolucao_steps[i], count=n)
+				print("[DEBUG] limpou o #" + str(i) + " " + str(n) + " vezes")
 		
-		print("\n")
+				#zerar a cada expressao
+				n=0
 		
-		#correcao #03
-		#lolwut
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			print("\n")
+		
+			#correcao #03
+			#lolwut
 
 
 
-	#fim do for loop 	
+		#fim do for loop 	
 
+	#fim do if pro tex
+	
+	
+	
+	if math_type is "mathml" :
+	
+		print("[DEBUG] CorrigirResolucao em mathml")
+	
+	#fim do if pro mathml
 
 #fim de CorrigirResolucao()
 
@@ -181,6 +243,7 @@ def CorrigirResolucao():
 #apagar essa funcao depois
 def Debug_MostraResolucao():
 	global resolucao_steps
+	print("\n[DEBUG] Debug_MostraResolucao()")
 	
 	for i in range(0, len(resolucao_steps)):
 		print(resolucao_steps[i] + "\n")
@@ -248,12 +311,6 @@ def Tchau():
 	time.sleep(esperar)
 	firefox.quit()
 	
-#----------------------------------------
-
-# VARIÁVEIS GLOBAIS
-
-global resolucao_steps
-
 
 
 #----------------------------------------
@@ -261,6 +318,13 @@ global resolucao_steps
 # PROGRAMA PRINCIPAL
 
 LimparTela()
+
+#DEBUG selecionar modo
+@click.command()
+@click.option('--equation', prompt='Equation', help='Equation to convert')
+@click.option('--format', type=click.Choice(output_formats), prompt='Output Format', help='Equation processing format')
+
+ClickComando(equation, format)
 
 #Selecionar navegador - GeckoDriver (FIREFOX)!
 print("[DEBUG] webdriver.Firefox()")
@@ -283,10 +347,17 @@ firefox.get('https://www.derivative-calculator.net/')
 
 print("[DEBUG] Carregou Pagina!")
 
+
+#Liberar INPUT do usuário
+#@click.command()
+#@click.option('--equation', prompt='Equation', help='Equation to convert')
+#@click.option('--iformat', type=click.Choice(input_formats), prompt='Input Format', help='Equation input format')
+
+
 # pegar o campo de busca onde podemos digitar algum termo
 campo_expressao = firefox.find_element_by_id('expression')
 
-expressao = "ln(x/2)"
+#expressao = "ln(x/2)"
 
 # Digitar "Python Club" no campo de busca
 campo_expressao.send_keys(expressao)
