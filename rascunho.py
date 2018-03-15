@@ -231,7 +231,7 @@ def CorrigirResolucao(math_type):
 		
 			#correcao #03
 
-			resolucao_steps[i] = " $ " + resolucao_steps[i] + " $ "
+			resolucao_steps[i] = "$$" + resolucao_steps[i] + "$$"
 			
 			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
 			print("\n")
@@ -330,6 +330,76 @@ def Tchau():
 	
 #------------------------------------------
 
+# Melhorias em tentativas de clicar em botões
+
+def ClicarGo():
+
+	global firefox
+
+	try:
+		go_button = firefox.find_element_by_id('go')
+
+		actions = ActionChains(firefox)
+		actions.move_to_element(go_button)
+		actions.click(go_button)
+		actions.perform()
+		print("[DEBUG] Clicou em Go!")
+		return True
+	
+	except:
+		print("[DEBUG] Erro ao clicar em Go!")
+		return False
+
+#fim de ClicarGo()
+
+
+def ClicarShowSteps():
+
+	global firefox
+	
+	try:
+		# Apertar "Show Steps"
+		wait01 = WebDriverWait(firefox, timeout).until(
+
+			#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
+
+			EC.element_to_be_clickable((By.CLASS_NAME, "show-steps-button"))
+		)
+
+	except:
+		print("[DEBUG] Erro ao esperar Show Steps")
+		
+		
+
+	finally:
+		print("[DEBUG] Esperar antes de apertar Show Steps")
+		time.sleep(3)
+
+
+	print("[DEBUG] Clicar em Show Steps!")
+
+
+	try:
+		#clicar em Show Steps
+		show_steps_button = firefox.find_element_by_class_name('show-steps-button')
+
+		actions = ActionChains(firefox)
+		actions.move_to_element(show_steps_button)
+		actions.click(show_steps_button)
+		actions.perform()
+
+		print("[DEBUG] Show Steps clicado!")
+		return True
+
+	except:
+		print("[DEBUG] Erro ao clicar em Show Steps!")
+		return False
+	
+	
+#fim de ClicarShowSteps()	
+
+#------------------------------------------
+
 # ROTINA PRINCIPAL
 
 #DEBUG selecionar modo
@@ -395,42 +465,28 @@ def Fazer(equation, format):
 		
 	#parece que clicar em qualquer coisa na tela, desbuga a view
 	#implementar depois
-
-	go_button = firefox.find_element_by_id('go')
-
-	actions = ActionChains(firefox)
-	actions.move_to_element(go_button)
-	actions.click(go_button)
-	actions.perform()
-
+	
+	go = ClicarGo()
+	
+	if (go == True):
+		print("go = " + str(go))
+		
+		
+	if (go == False):
+		print("go = " + str(go))
+		ClicarGo()
+	
 
 	# Implementar Wait para identificar os botões depois de ter enviado expressão
 
-	try:
-		# Apertar "Show Steps"
-		wait01 = WebDriverWait(firefox, timeout).until(
-
-			#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
-
-			EC.element_to_be_clickable((By.CLASS_NAME, "show-steps-button"))
-		)
-
-	finally:
-		print("[DEBUG] Esperar antes de apertar Show Steps")
-		time.sleep(3)
-
-
-	print("[DEBUG] Clicar em Show Steps!")
-
-	#clicar em Show Steps
-	show_steps_button = firefox.find_element_by_class_name('show-steps-button')
-
-	actions = ActionChains(firefox)
-	actions.move_to_element(show_steps_button)
-	actions.click(show_steps_button)
-	actions.perform()
-
-	print("[DEBUG] Show Steps clicado!")
+	showsteps = ClicarShowSteps()
+	
+	if (showsteps == True):
+		print("showsteps = " + str(showsteps))
+		
+	if (showsteps == False):
+		print("showsteps = " + str(showsteps))
+		ClicarShowSteps()	
 
 
 	# Esperar ate os calculos aparecerem...
@@ -440,8 +496,11 @@ def Fazer(equation, format):
 					EC.element_to_be_clickable((By.CLASS_NAME, "calc-content"))
 			)
 
+	except:
+		print("[DEBUG] Erro ao esperar os calculos!")
+
 	finally:
-			print("[DEBUG] Esperar antes de obter calculos...")
+		print("[DEBUG] Esperar antes de obter calculos...")
 
 
 	time.sleep(esperar)

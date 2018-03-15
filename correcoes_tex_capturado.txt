@@ -18,6 +18,14 @@ Só preciso anular essas macros... com outras macros
 
 
 # 03 Colocar fórmula dentro de $ $ ou $$ $$ - delimitadores math
+ok
+
+
+# 04 Separar expressão principal
+
+- resolucao_steps[0] é a primeira expressão
+
+
 
 
 
