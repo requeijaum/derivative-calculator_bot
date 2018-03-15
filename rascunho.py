@@ -160,7 +160,7 @@ def CorrigirResolucao():
 		
 		#limpar "}" dos cssID
 		print("[DEBUG] limpou o #" + str(i) + " " + str(n) + "vezes")
-		resolucao_steps[i] = re.sub(r"\}", "" , resolucao_steps[i], count=n)
+		resolucao_steps[i] = re.sub( "}", "" , resolucao_steps[i], count=n)
 		
 		#zerar a cada expressao
 		n=0
