@@ -1,0 +1,36 @@
+correções a fazer no latex capturado da pagina
+
+#01a - "\dfrac" --> "\frac"
+ok
+#01b - "tfrac" --> "\frac"
+ok
+
+
+#02 - apagar via REGEX : "\class{steps-node}" e "\cssId{steps-node*}"
+mas contar quantas vezes apaguei os {\\cssID{}}
+preciso limpar os "}" q não são apagados
+
+Não... são classes do MathJax - extensão HTML
+Só preciso anular essas macros... com outras macros
+\newcommand {\class}[1]{\nothing}
+\newcommand {\cssId}[1]{\nothing}
+
+
+
+# 03 Colocar fórmula dentro de $ $ ou $$ $$ - delimitadores math
+
+
+
+#? - "cdot" --> "dot"
+
+#? ajeitar frações
+- usar os pacotes certos do LaTeX
+\usepackage{amsmath}
+%\usepackage{html}
+\usepackage[TS1,T1]{fontenc}
+\usepackage{textcomp}
+
+
+#? -  verificar "\right" e \left"
+
+

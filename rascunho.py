@@ -43,19 +43,18 @@ math_type = ""
 global output_formats
 output_formats = ['tex', 'mathml']
 
+global bode
+bode = ""
 
+global calculos_element
+calculos_element = ""
+
+global firefox
+firefox = ""
 
 #----------------------------------------
 
 # FUNÇÕES
-
-
-def ClickComando(equation, format):
-	global expressao
-	global math_type	
-
-	math_type = format
-	expressao = equation
 
 
 def LimparTela():
@@ -65,6 +64,8 @@ def LimparTela():
 
 
 def DesceJanelaUmPouco(num):
+	global bode
+	
 	# Tirar bug caso o mouse clique em algum lugar fora da visualizacao
 	# Parece que descer teclas buga tudo - foda-se
 	print("[DEBUG] Descer a tela...")
@@ -76,10 +77,16 @@ def DesceJanelaUmPouco(num):
 
 def Resolucao(math_type):
 	global resolucao_steps
+	global calculos_element
+	global firefox
+	
 	
 	print("[DEBUG] obter todos os div.calc-math e meter numa lista")
 
-	if math_type is "tex":
+	print("[DEBUG] math_type = " + math_type)
+
+
+	if math_type == "tex":
 	
 		try:
 			calculos_element = 	firefox.find_elements_by_class_name(
@@ -97,7 +104,7 @@ def Resolucao(math_type):
 			print("[DEBUG] erro... sem calc-math... :( ")
 
 
-	if math_type is "mathml":
+	if math_type == "mathml":
 	
 		try:
 			# DEBUG MathML
@@ -115,12 +122,9 @@ def Resolucao(math_type):
 	indice=0
 	resolucao_steps=[] #talvez mudar isso aqui pra outro lugar
 	
-	print("[DEBUG] print(tex)")
-	#print("[DEBUG] print(MathML)")
-
 	for calculo in calculos_element:
 		
-		if math_type is "tex" :
+		if math_type == "tex" :
 		
 				#DEBUG TeX
 			
@@ -148,7 +152,7 @@ def Resolucao(math_type):
 		
 			#-------------------------
 
-		if math_type is "mathml" :
+		if math_type == "mathml" :
 				
 				#DEBUG MathML
 		
@@ -159,17 +163,21 @@ def Resolucao(math_type):
 
 		
 	#fim do for loop
+	
 	indice=0		
 
 #fim de Resolucao()
 
 
-def CorrigirResolucao():
+def CorrigirResolucao(math_type):
 	global resolucao_steps
 	n = 0
 
+	#funcao desnecessaria
+	#so usar os pacotes certos no documento LaTeX
+	#talvez eu use isso pra outra coisa...
 
-	if math_type is "tex" :
+	if math_type == "tex" :
 	
 	
 		print("[DEBUG] CorrigirResolucao em tex")	
@@ -182,47 +190,51 @@ def CorrigirResolucao():
 			print ("[DEBUG] i = " + str(i))
 		
 			#correcao #01
-			resolucao_steps[i] = resolucao_steps[i].replace("\\dfrac", "\\frac")
-			resolucao_steps[i] = resolucao_steps[i].replace("\\tfrac", "\\frac")
-			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			#resolucao_steps[i] = resolucao_steps[i].replace("\\dfrac", "\\frac")
+			#resolucao_steps[i] = resolucao_steps[i].replace("\\tfrac", "\\frac")
+			#print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
 		
 			#correcao #02
 			#parece que str.strip() come parte do texto
 			#b = b.replace("\\class{steps-node}" , "")
-			resolucao_steps[i] = resolucao_steps[i].replace("\\class{steps-node}" , "")
-			resolucao_steps[i] = resolucao_steps[i].replace("{}" , "")
-			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			#resolucao_steps[i] = resolucao_steps[i].replace("\\class{steps-node}" , "")
+			#resolucao_steps[i] = resolucao_steps[i].replace("{}" , "")
+			#print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
 		
 			#usar re.sub()
 			#b = re.sub(r"{.cssId", "" , b)
 			#b = re.sub(r".steps-node-.\}", "" , b)
 		
-			pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
-			resolucao_steps[i] = pega[0]
-			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
-			n += pega[1]
-			print("[DEBUG] n #01 = " + str(n))
+			#pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
+			#resolucao_steps[i] = pega[0]
+			#print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			#n += pega[1]
+			#print("[DEBUG] n #01 = " + str(n))
 		
-			pega = re.subn(r".steps-node-.\}", "" , resolucao_steps[i])
-			resolucao_steps[i] = pega[0]
-			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
-			n += pega[1]
-			print("[DEBUG] n #02 = " + str(n))		
+			#pega = re.subn(r".steps-node-.\}", "" , resolucao_steps[i])
+			#resolucao_steps[i] = pega[0]
+			#print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			#n += pega[1]
+			#print("[DEBUG] n #02 = " + str(n))		
 		
 			#limpar "}" dos cssID
-			if n != 0 :
-				resolucao_steps[i] = re.sub( "}", "" , resolucao_steps[i], count=n)
-				print("[DEBUG] limpou o #" + str(i) + " " + str(n) + " vezes")
+			#if n != 0 :
+			#	resolucao_steps[i] = re.sub( "}", "" , resolucao_steps[i], count=n)
+			#	print("[DEBUG] limpou o #" + str(i) + " " + str(n) + " vezes")
+			#	
+			#	#zerar a cada expressao
+			#	n=0
+			#
+			#print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			#print("\n")
 		
-				#zerar a cada expressao
-				n=0
-		
-			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
-			print("\n")
 		
 			#correcao #03
-			#lolwut
 
+			resolucao_steps[i] = " $ " + resolucao_steps[i] + " $ "
+			
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			print("\n")
 
 
 		#fim do for loop 	
@@ -231,7 +243,7 @@ def CorrigirResolucao():
 	
 	
 	
-	if math_type is "mathml" :
+	if math_type == "mathml" :
 	
 		print("[DEBUG] CorrigirResolucao em mathml")
 	
@@ -243,6 +255,7 @@ def CorrigirResolucao():
 #apagar essa funcao depois
 def Debug_MostraResolucao():
 	global resolucao_steps
+	
 	print("\n[DEBUG] Debug_MostraResolucao()")
 	
 	for i in range(0, len(resolucao_steps)):
@@ -254,6 +267,8 @@ def Debug_MostraResolucao():
 
 
 def Simplificar():
+	global firefox
+
 	# clicar em Simplify - mas precisa ser o de baixo
 	simplify_list = firefox.find_elements_by_class_name('simplify-button')
 	simplify_button = simplify_list[1]
@@ -307,181 +322,211 @@ def Exportar_PDF():
 
 
 def Tchau():
+	global firefox
+	
 	print("[DEBUG] Desligando...")
 	time.sleep(esperar)
 	firefox.quit()
 	
+#------------------------------------------
 
-
-#----------------------------------------
-
-# PROGRAMA PRINCIPAL
-
-LimparTela()
+# ROTINA PRINCIPAL
 
 #DEBUG selecionar modo
 @click.command()
 @click.option('--equation', prompt='Equation', help='Equation to convert')
 @click.option('--format', type=click.Choice(output_formats), prompt='Output Format', help='Equation processing format')
 
-ClickComando(equation, format)
+def Fazer(equation, format):
 
-#Selecionar navegador - GeckoDriver (FIREFOX)!
-print("[DEBUG] webdriver.Firefox()")
-firefox = webdriver.Firefox(timeout=timeout, log_path="/tmp/geckolog.log")
+	global bode
+	global firefox
+	
+	
+	expressao = equation
+	math_type = format
 
-# setar tamanho legal pra visualizar a janela
-firefox.set_window_size(1280,720)
-print(firefox.get_window_size())
-#setar posicao da janela?
+	#Selecionar navegador - GeckoDriver (FIREFOX)!
+	print("\n\nIniciando...\n\n")
+	
+	print("[DEBUG] webdriver.Firefox()")
+	firefox = webdriver.Firefox(timeout=timeout, log_path="/tmp/geckolog.log")
 
-
-
-#try:
-firefox.get('https://www.derivative-calculator.net/')
-
-
-#except TimeoutException:
-#	print("[DEBUG] Esperou a página carregar, mas deu timeout")
-
-
-print("[DEBUG] Carregou Pagina!")
+	# setar tamanho legal pra visualizar a janela
+	firefox.set_window_size(1280,720)
+	print("[DEBUG] " + str(firefox.get_window_size()))
+	#setar posicao da janela?
 
 
-#Liberar INPUT do usuário
-#@click.command()
-#@click.option('--equation', prompt='Equation', help='Equation to convert')
-#@click.option('--iformat', type=click.Choice(input_formats), prompt='Input Format', help='Equation input format')
+	#try:
+	firefox.get('https://www.derivative-calculator.net/')
 
 
-# pegar o campo de busca onde podemos digitar algum termo
-campo_expressao = firefox.find_element_by_id('expression')
-
-#expressao = "ln(x/2)"
-
-# Digitar "Python Club" no campo de busca
-campo_expressao.send_keys(expressao)
-
-# Simular que o enter seja precisonado
-campo_expressao.send_keys(Keys.ENTER)
-
-print("[DEBUG] Enviou expressao!")
-
-#parece que clicar em qualquer coisa na tela, desbuga a view
-#implementar depois
+	#except TimeoutException:
+	#	print("[DEBUG] Esperou a página carregar, mas deu timeout")
 
 
-# Implementar Wait para identificar os botões depois de ter enviado expressão
+	print("[DEBUG] Carregou Pagina!")
 
-try:
-	# Apertar "Show Steps"
-	wait01 = WebDriverWait(firefox, timeout).until(
+	#seria bom diminuir o zoom da página?
+	#enviar Ctrl + minus  3 vezes
+	#mudar tecla, em caso de Mac ou Windows
 
-		#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
-
-		EC.element_to_be_clickable((By.CLASS_NAME, "show-steps-button"))
-	)
-
-finally:
-	print("[DEBUG] Esperar antes de apertar Show Steps")
-	time.sleep(1)
-
-print("[DEBUG] Saiu do finally!")
+	#Liberar INPUT do usuário
+	#@click.command()
+	#@click.option('--equation', prompt='Equation', help='Equation to convert')
+	#@click.option('--iformat', type=click.Choice(input_formats), prompt='Input Format', help='Equation input format')
 
 
-#clicar em Show Steps
+	# pegar o campo de busca onde podemos digitar algum termo
+	campo_expressao = firefox.find_element_by_id('expression')
 
-show_steps_button = firefox.find_element_by_class_name('show-steps-button')
+	#expressao = "ln(x/2)"
 
-actions = ActionChains(firefox)
-actions.move_to_element(show_steps_button)
-actions.click(show_steps_button)
-actions.perform()
+	# Digitar "Python Club" no campo de busca
+	campo_expressao.send_keys(expressao)
+	print("[DEBUG] Enviou expressao!")
+	
+	# Simular que o enter seja precisonado
+	# ou seria melhor clicar em "GO!"
+	
+	#campo_expressao.send_keys(Keys.ENTER)
+	#print("[DEBUG] Apertou ENTER!")
+		
+	#parece que clicar em qualquer coisa na tela, desbuga a view
+	#implementar depois
 
-print("[DEBUG] Show Steps clicado!")
+	go_button = firefox.find_element_by_id('go')
 
-
-# Esperar ate os calculos aparecerem...
-
-try:
-        wait03 = WebDriverWait(firefox, timeout).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "calc-content"))
-        )
-
-finally:
-        print("[DEBUG] Esperar antes de obter calculos...")
-
-
-time.sleep(esperar)
-
-# Capturar dados de resultado para objeto Selenium
-#calculos_element = firefox.find_element_by_class_name("calc-content")
-#calculos_element = firefox.find_element_by_id("result")
+	actions = ActionChains(firefox)
+	actions.move_to_element(go_button)
+	actions.click(go_button)
+	actions.perform()
 
 
-# Ajustar visualizacao
+	# Implementar Wait para identificar os botões depois de ter enviado expressão
 
-#actions.move_to_element(calculos_element)
-#selenium.common.exceptions.MoveTargetOutOfBoundsException: 
-#Message: (824.5, 669.1583251953125) is out of bounds of viewport 
-#width (1280) and height (646)
+	try:
+		# Apertar "Show Steps"
+		wait01 = WebDriverWait(firefox, timeout).until(
 
-#definir elemento pra offset de posicao - ajeitar a view
-#guia_touch = firefox.find_element_by_id("result-text")
+			#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
 
-#print("[DEBUG] Iniciar touch pra baixo...")
-#touch = TouchActions(firefox)
-#touch.scroll(0, -200)
-#touch.perform()
+			EC.element_to_be_clickable((By.CLASS_NAME, "show-steps-button"))
+		)
 
-#https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
-bode = firefox.find_element_by_xpath('//body')
-
-DesceJanelaUmPouco(7)
-
-#fim do for loop
-
-Resolucao()
-Debug_MostraResolucao() #comentar depois
-
-print("\n\n zzz \n\n")
-
-CorrigirResolucao()
-Debug_MostraResolucao() #comentar depois
-
-#----------------------------------------------
-
-# Converter MathML pra TeX - incompleto/não usar
-# invocar o mathconverter do oerpub
-# Não... muito trabalho.
-# Só renderizar o MathML tá bom demais!
-# Usar benetech.github.io/mmlc-api
-
-#import requests, click
-
-#from lxml import etree
+	finally:
+		print("[DEBUG] Esperar antes de apertar Show Steps")
+		time.sleep(3)
 
 
-# mathtype = "mathml"
+	print("[DEBUG] Clicar em Show Steps!")
 
-#-----------------------------------------------
+	#clicar em Show Steps
+	show_steps_button = firefox.find_element_by_class_name('show-steps-button')
+
+	actions = ActionChains(firefox)
+	actions.move_to_element(show_steps_button)
+	actions.click(show_steps_button)
+	actions.perform()
+
+	print("[DEBUG] Show Steps clicado!")
+
+
+	# Esperar ate os calculos aparecerem...
+
+	try:
+			wait03 = WebDriverWait(firefox, timeout).until(
+					EC.element_to_be_clickable((By.CLASS_NAME, "calc-content"))
+			)
+
+	finally:
+			print("[DEBUG] Esperar antes de obter calculos...")
+
+
+	time.sleep(esperar)
+
+	# Capturar dados de resultado para objeto Selenium
+	#calculos_element = firefox.find_element_by_class_name("calc-content")
+	#calculos_element = firefox.find_element_by_id("result")
+
+
+	# Ajustar visualizacao
+
+	#actions.move_to_element(calculos_element)
+	#selenium.common.exceptions.MoveTargetOutOfBoundsException: 
+	#Message: (824.5, 669.1583251953125) is out of bounds of viewport 
+	#width (1280) and height (646)
+
+	#definir elemento pra offset de posicao - ajeitar a view
+	#guia_touch = firefox.find_element_by_id("result-text")
+
+	#print("[DEBUG] Iniciar touch pra baixo...")
+	#touch = TouchActions(firefox)
+	#touch.scroll(0, -200)
+	#touch.perform()
+
+	#https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
+	bode = firefox.find_element_by_xpath('//body')
+
+	DesceJanelaUmPouco(7)
+
+	#fim do for loop
+
+	Resolucao(math_type)
+	Debug_MostraResolucao() #comentar depois
+
+	print("\n\n zzz \n\n")
+
+	CorrigirResolucao(math_type)
+	Debug_MostraResolucao() #comentar depois
+
+	#----------------------------------------------
+
+	# Converter MathML pra TeX - incompleto/não usar
+	# invocar o mathconverter do oerpub
+	# Não... muito trabalho.
+	# Só renderizar o MathML tá bom demais!
+	# Usar benetech.github.io/mmlc-api
+
+	#import requests, click
+
+	#from lxml import etree
+
+
+	# mathtype = "mathml"
+
+	#-----------------------------------------------
 
   
 
 
-# obter simplificação
-#Simplificar()
+	# obter simplificação
+	#Simplificar()
 
-# obter gráfico
-#Grafico()
+	# obter gráfico
+	#Grafico()
 
-# exportar tudo pra TeX e depois PDF
-Exportar_TeX()
+	# exportar tudo pra TeX e depois PDF
+	Exportar_TeX()
 
-Exportar_PDF()
+	Exportar_PDF()
 
 
-# desligar navegador
-Tchau()
+	# desligar navegador
+	Tchau()
+
+
+#----------------------------------------
+
+#fim de Fazer()
+
+if __name__ == '__main__' :
+	LimparTela()
+	Fazer()
+
+
+
+
 
 
