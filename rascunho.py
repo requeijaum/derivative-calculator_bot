@@ -5,7 +5,7 @@
 # Criado por Rafael F S Requiao @ Python 3.6.4 (brew) - macOS 10.11
 
 
-import os, sys, string, codecs
+import os, sys, string, codecs, re
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -31,8 +31,222 @@ esperar = 10
 
 # FUNÇÕES
 
-def clear_screen():
+def LimparTela():
 	os.system('cls' if os.name=='nt' else 'clear')
+
+#fim de LimparTela()
+
+
+def DesceJanelaUmPouco(num):
+	# Tirar bug caso o mouse clique em algum lugar fora da visualizacao
+	# Parece que descer teclas buga tudo - foda-se
+	print("[DEBUG] Descer a tela...")
+	for i in range(0, num) :
+		bode.send_keys(u'\ue015')
+
+#fim de DesceJanelaUmPouco()
+
+
+def Resolucao():
+	global resolucao_steps
+	
+	print("[DEBUG] obter todos os div.calc-math e meter numa lista")
+
+	try:
+		calculos_element = 	firefox.find_elements_by_class_name(
+								"calc-math"
+							)
+
+	#calculos_element = 	firefox.find_elements_by_xpath(
+	#						#"//div[@class='calc-math']"  #TeX
+	#						"//span[@id='MathJax*']"
+	#					)
+					
+
+	# DEBUG MathML
+	# limitar melhor o que aparece dentro daquele div.calc-math
+	# to pegando coisas de fora
+	#calculos_element = 	firefox.find_elements_by_class_name("mjx-chtml")					
+					
+					
+	# Tratar elemento do Firefox antes de imprimir
+					
+	except:
+		print("[DEBUG] erro... sem calc-math... :( ")
+
+
+
+	#pegar TeX de cada calc-math - element <script> ; type="math/tex"
+	indice=0
+	resolucao_steps=[] #talvez mudar isso aqui pra outro lugar
+	
+	print("[DEBUG] print(tex)")
+	#print("[DEBUG] print(MathML)")
+
+	for calculo in calculos_element:
+		
+			#DEBUG TeX
+			
+			temp = codecs.encode(calculo.text , 'utf-8')
+			#atributo1 = calculo.get_attribute("id")
+			#atributo2 = calculo.get_attribute("type")
+			#print("indice = " + str(indice) + " " + str(atributo1) + " " + str(atributo2) + " --> " + str(temp))
+		
+			#WIP TeX - método #01
+			#pré-processar calculo.text
+			#só existe o método .text na classe WebElement...?
+			#posso usar algum get (innerHTML/outerHTML)?
+			tex = calculo.find_element_by_tag_name("script").get_attribute("innerHTML")
+		
+			#WIP TeX - método #02
+			#lista_split = calculo.text.split("\n")
+			#tex = ("").join(lista_split)
+		
+			#mandar cada tex pra uma lista...
+		
+			resolucao_steps.append(tex)
+		
+			#print("indice = " + str(indice) + " --> " + tex)
+		
+			#-------------------------
+				
+			#DEBUG MathML
+		
+			#mathml = codecs.encode(calculo.get_attribute("data-mathml") , 'utf-8')
+			#print("indice = " + str(indice) + " --> " + str(mathml))
+		
+			#--------------------------
+		
+			indice += 1
+		
+	#fim do for loop
+	indice=0		
+
+#fim de Resolucao()
+
+
+def CorrigirResolucao():
+	global resolucao_steps
+	n = 0
+	
+	#corrige o TeX obtido
+	#lembre-se do caracter especial "\" - precisarei de dois
+	#ler "correcoes_tex_capturado.txt"
+	for i in range(0, len(resolucao_steps)):
+		
+		#correcao #01
+		resolucao_steps[i] = resolucao_steps[i].replace("\\dfrac", "\\frac")
+		resolucao_steps[i] = resolucao_steps[i].replace("\\tfrac", "\\frac")
+		
+		#correcao #02
+		#parece que str.strip() come parte do texto
+		#b = b.replace("\\class{steps-node}" , "")
+		resolucao_steps[i] = resolucao_steps[i].replace("\\class{steps-node}" , "")
+		resolucao_steps[i] = resolucao_steps[i].replace("{}" , "")
+		
+		#usar re.sub()
+		
+		#b = re.sub(r"{.cssId", "" , b)
+		#b = re.sub(r".steps-node-.\}", "" , b)
+		
+		pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
+		resolucao_steps[i] = pega[0]
+		n += pega[1]
+		
+		pega = re.sub(r".steps-node-.\}", "" , resolucao_steps[i])
+		pega = re.subn(r"{.cssId", "" , resolucao_steps[i])
+		resolucao_steps[i] = pega[0]
+		n += pega[1]		
+		
+		#limpar "}" dos cssID
+		print("[DEBUG] limpou o #" + str(i) + " " + str(n) + "vezes")
+		resolucao_steps[i] = re.sub(r"\}", "" , resolucao_steps[i], count=n)
+		
+		#zerar a cada expressao
+		n=0
+		
+		print("\n")
+		
+		#correcao #03
+		#lolwut
+
+
+
+	#fim do for loop 	
+
+
+#fim de CorrigirResolucao()
+
+
+#apagar essa funcao depois
+def Debug_MostraResolucao():
+	global resolucao_steps
+	
+	for i in range(0, len(resolucao_steps)):
+		print(resolucao_steps[i] + "\n")
+
+	#fim do for loop   	
+
+
+
+
+def Simplificar():
+	# clicar em Simplify - mas precisa ser o de baixo
+	simplify_list = firefox.find_elements_by_class_name('simplify-button')
+	simplify_button = simplify_list[1]
+
+	actions = ActionChains(firefox)
+	actions.move_to_element(simplify_button)
+	actions.click(simplify_button)
+	actions.perform()
+
+	print("[DEBUG] Simplify clicado!")
+
+
+	# Esperar ate os calculos aparecerem...
+
+	try:
+			wait03 = WebDriverWait(firefox, timeout).until(
+					EC.element_to_be_clickable((By.CLASS_NAME, "calc-content"))
+			)
+
+	finally:
+			print("[DEBUG] Esperar antes de obter simplificação...")
+
+
+	time.sleep(esperar)
+
+
+	#capturar equacao simplificada
+
+	#caso para "No Further Simplification Found"
+
+
+
+
+	#--------------------
+
+
+def Grafico():
+	print("[DEBUG] Implementar Grafico()")
+
+
+
+def Exportar_TeX():
+	print("[DEBUG] Implementar Exportar_TeX()")
+	# criar documento de testes com expressoes no https://papeeria.com/
+	
+
+
+def Exportar_PDF():
+	print("[DEBUG] Implementar Exportar_PDF()")
+
+
+
+def Tchau():
+	print("[DEBUG] Desligando...")
+	time.sleep(esperar)
+	firefox.quit()
 	
 #----------------------------------------
 
@@ -46,7 +260,7 @@ global resolucao_steps
 
 # PROGRAMA PRINCIPAL
 
-clear_screen()
+LimparTela()
 
 #Selecionar navegador - GeckoDriver (FIREFOX)!
 print("[DEBUG] webdriver.Firefox()")
@@ -103,6 +317,9 @@ finally:
 
 print("[DEBUG] Saiu do finally!")
 
+
+#clicar em Show Steps
+
 show_steps_button = firefox.find_element_by_class_name('show-steps-button')
 
 actions = ActionChains(firefox)
@@ -149,85 +366,17 @@ time.sleep(esperar)
 #https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
 bode = firefox.find_element_by_xpath('//body')
 
-#Parece que descer teclas buga tudo
-print("[DEBUG] Descer a tela...")
-for i in range(0,7) :
-	bode.send_keys(u'\ue015')
+DesceJanelaUmPouco(7)
 
 #fim do for loop
 
+Resolucao()
+Debug_MostraResolucao() #comentar depois
 
-print("[DEBUG] obter todos os div.calc-math e meter numa lista")
+print("\n\n zzz \n\n")
 
-try:
-	calculos_element = 	firefox.find_elements_by_class_name(
-							"calc-math"
-						)
-
-#calculos_element = 	firefox.find_elements_by_xpath(
-#						#"//div[@class='calc-math']"  #TeX
-#						"//span[@id='MathJax*']"
-#					)
-					
-
-# DEBUG MathML
-# limitar melhor o que aparece dentro daquele div.calc-math
-# to pegando coisas de fora
-#calculos_element = 	firefox.find_elements_by_class_name("mjx-chtml")					
-					
-					
-# Tratar elemento do Firefox antes de imprimir
-					
-except:
-	print("[DEBUG] erro... sem calc-math... :( ")
-
-
-
-#pegar TeX de cada calc-math - element <script> ; type="math/tex"
-indice=0
-resolucao_steps=[]
-print("[DEBUG] print(tex)")
-#print("[DEBUG] print(MathML)")
-
-for calculo in calculos_element:
-		
-		#DEBUG TeX
-			
-		temp = codecs.encode(calculo.text , 'utf-8')
-		#atributo1 = calculo.get_attribute("id")
-		#atributo2 = calculo.get_attribute("type")
-		#print("indice = " + str(indice) + " " + str(atributo1) + " " + str(atributo2) + " --> " + str(temp))
-		
-		#WIP TeX - método #01
-		#pré-processar calculo.text
-		#só existe o método .text na classe WebElement...?
-		#posso usar algum get (innerHTML/outerHTML)?
-		tex = calculo.find_element_by_tag_name("script").get_attribute("innerHTML")
-		
-		#WIP TeX - método #02
-		#lista_split = calculo.text.split("\n")
-		#tex = ("").join(lista_split)
-		
-		#mandar cada tex pra uma lista...
-		
-		resolucao_steps.append(tex)
-		
-		#print("indice = " + str(indice) + " --> " + tex)
-		
-		#-------------------------
-				
-		#DEBUG MathML
-		
-		#mathml = codecs.encode(calculo.get_attribute("data-mathml") , 'utf-8')
-		#print("indice = " + str(indice) + " --> " + str(mathml))
-		
-		#--------------------------
-		
-		indice += 1
-		
-#fim do for loop
-		
-indice=0
+CorrigirResolucao()
+Debug_MostraResolucao() #comentar depois
 
 #----------------------------------------------
 
@@ -246,25 +395,22 @@ indice=0
 
 #-----------------------------------------------
 
-
-# Imprimir lista
-
-for i in range(0, len(resolucao_steps)):
-	print(resolucao_steps[i] + "\n")
-        
+  
 
 
 # obter simplificação
-
+#Simplificar()
 
 # obter gráfico
+#Grafico()
+
+# exportar tudo pra TeX e depois PDF
+Exportar_TeX()
+
+Exportar_PDF()
 
 
-# exportar tudo pra TeX em PDF
+# desligar navegador
+Tchau()
 
-import tex
 
-
-print("[DEBUG] Desligando...")
-time.sleep(esperar)
-firefox.quit()
