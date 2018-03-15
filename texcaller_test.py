@@ -7,23 +7,30 @@
 #----------------------------------------
 
 from __future__ import division, print_function, unicode_literals
+import tex, texcaller, io, codecs
+from io import StringIO, BytesIO
 
-import texcaller
 
 nome_arquivo_tex = "empty.tex"
-f_tex = open(nome_arquivo_tex , "rb")
+f_tex = open(nome_arquivo_tex , "r")
 
 latex = f_tex.read() #talvez setar modo b
 print("Leu TEX")
+f_tex.close()
 
 # https://vog.github.io/texcaller/group__python.html
 
-pdf, info = texcaller.convert(latex, "LaTeX", "PDF", 5)
-
-latex.close()
+pdf = texcaller.convert(latex, "LaTeX", "PDF", 5)
 
 nome_arquivo_pdf = "pdf.pdf"
 f_pdf = open(nome_arquivo_pdf , "wb")
+
+print(str(f_pdf))
+print(len(pdf))
+#print(str(pdf))
+
+pdf = pdf[0].encode("utf-8", "surrogateescape")
+#pdf = BytesIO(pdf)
 
 f_pdf.write(pdf)
 f_pdf.close()

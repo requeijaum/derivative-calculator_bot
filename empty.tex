@@ -5,8 +5,8 @@
 %\usepackage[TS1,T1]{fontenc}
 \usepackage{textcomp}
 
-\newcommand {\class}[1]{\nothing}
-\newcommand {\cssId}[1]{\nothing}
+\newcommand {\class}[1]{ }       % mas dá erro de Undefined Control Sequence
+\newcommand {\cssId}[1]{ }
 
 \title{Selenium Derivative Calculator Bot}
 \author{Rafael Requiao}
@@ -20,6 +20,22 @@
 
 
 $$\arctan\left(\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\right)$$
+
+$$\class{steps-node}{\cssId{steps-node-1}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[\arctan\left(\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\right)\right]}}$$
+
+$$=\class{steps-node}{\cssId{steps-node-2}{\dfrac{1}{\left(\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\right)^2+1}}}\cdot\class{steps-node}{\cssId{steps-node-3}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\right]}}$$
+
+$$=\dfrac{\class{steps-node}{\cssId{steps-node-4}{\frac{1}{2}}}\class{steps-node}{\cssId{steps-node-5}{\ln^{\frac{1}{2}-1}\left(\tan\left(5x-1\right)\right)}}\cdot\class{steps-node}{\cssId{steps-node-6}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[\ln\left(\tan\left(5x-1\right)\right)\right]}}}{\ln\left(\tan\left(5x-1\right)\right)+1}$$
+
+$$=\dfrac{\class{steps-node}{\cssId{steps-node-7}{\frac{1}{\tan\left(5x-1\right)}}}\cdot\class{steps-node}{\cssId{steps-node-8}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[\tan\left(5x-1\right)\right]}}}{2\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\left(\ln\left(\tan\left(5x-1\right)\right)+1\right)}$$
+
+$$=\dfrac{\class{steps-node}{\cssId{steps-node-9}{\sec^2\left(5x-1\right)}}\cdot\class{steps-node}{\cssId{steps-node-10}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[5x-1\right]}}}{2\tan\left(5x-1\right)\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\left(\ln\left(\tan\left(5x-1\right)\right)+1\right)}$$
+
+$$=\dfrac{\class{steps-node}{\cssId{steps-node-11}{\left(5\cdot\class{steps-node}{\cssId{steps-node-13}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[x\right]}}+\class{steps-node}{\cssId{steps-node-12}{\tfrac{\mathrm{d}}{\mathrm{d}x}\left[-1\right]}}\right)}}\sec^2\left(5x-1\right)}{2\tan\left(5x-1\right)\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\left(\ln\left(\tan\left(5x-1\right)\right)+1\right)}$$
+
+$$=\dfrac{\left(5\cdot\class{steps-node}{\cssId{steps-node-14}{1}}+\class{steps-node}{\cssId{steps-node-15}{0}}\right)\sec^2\left(5x-1\right)}{2\tan\left(5x-1\right)\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\left(\ln\left(\tan\left(5x-1\right)\right)+1\right)}$$
+
+$$=\dfrac{5\sec^2\left(5x-1\right)}{2\tan\left(5x-1\right)\sqrt{\ln\left(\tan\left(5x-1\right)\right)}\left(\ln\left(\tan\left(5x-1\right)\right)+1\right)}$$
 
 
 
