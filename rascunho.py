@@ -8,9 +8,7 @@
 
 # IMPORTS
 
-from __future__ import division, print_function, unicode_literals
 import os, sys, string, time, codecs, re, click
-
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -27,12 +25,6 @@ from selenium.webdriver.common.touch_actions import TouchActions
 from selenium.common.exceptions import TimeoutException
 timeout = 20
 esperar = 10
-
-#implementar tex2pdf
-
-import tex, texcaller, io
-from io import StringIO, BytesIO
-
 
 
 #----------------------------------------
@@ -195,7 +187,7 @@ def CorrigirResolucao(math_type):
 		
 		
 		for i in range(0, len(resolucao_steps)):
-			#print ("[DEBUG] i = " + str(i))
+			print ("[DEBUG] i = " + str(i))
 		
 			#correcao #01
 			#resolucao_steps[i] = resolucao_steps[i].replace("\\dfrac", "\\frac")
@@ -241,8 +233,8 @@ def CorrigirResolucao(math_type):
 
 			resolucao_steps[i] = "$$" + resolucao_steps[i] + "$$"
 			
-			#print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
-			#print("\n")
+			print ("[DEBUG] resolucao_steps[" + str(i) +"] = " + resolucao_steps[i])
+			print("\n")
 
 
 		#fim do for loop 	
@@ -318,63 +310,6 @@ def Grafico():
 
 
 
-def ConstruirPagina(lista):
-	
-	pdf = None
-	
-	expressoes = "\n".join(lista)
-
-	latex1 = r'''% Arquivo TeX para o Derivative-Calculator Bot de Rafael Requião
-	\documentclass[12pt,a4paper]{memoir}      % Specifies the document class
-	\usepackage{amsmath}
-	%\usepackage[TS1,T1]{fontenc}
-	\usepackage{textcomp}
-	\newcommand {\class}[1]{ }       % mas dá erro de Undefined Control Sequence
-	\newcommand {\cssId}[1]{ }
-	\title{Selenium Derivative Calculator Bot}
-	\author{Rafael Requiao}
-	\date{March 15, 2018}
-	\begin{document}
-	\maketitle 
-	\section{Questao 01}'''
-
-	latex2 = r'''\end{document}               % End of document.'''
-
-	#documento = []
-	#documento = documento.append(latex1)
-	#documento = documento.append(expressoes)
-	#documento = documento.append(latex2)
-
-	#latex = ("\n").join(documento)
-	latex = latex1 + expressoes + latex2
-
-	#debugging only
-	#print(latex)
-
-	# https://vog.github.io/texcaller/group__python.html
-
-	pdf = texcaller.convert(latex, "LaTeX", "PDF", 5)
-
-	nome_arquivo_pdf = "pdf.pdf"
-	f_pdf = open(nome_arquivo_pdf , "wb")
-
-	print(str(f_pdf))
-	print(len(pdf))
-	#print(str(pdf))
-
-	pdf = pdf[0].encode("utf-8", "surrogateescape")
-	#pdf = BytesIO(pdf)
-
-	f_pdf.write(pdf)
-	f_pdf.close()
-
-	print("Escreveu PDF")
-
-
-
-#fim de ConstruirPagina
-
-
 def Exportar_TeX():
 	print("[DEBUG] Implementar Exportar_TeX()")
 	# criar documento de testes com expressoes no https://papeeria.com/
@@ -383,7 +318,7 @@ def Exportar_TeX():
 
 def Exportar_PDF():
 	print("[DEBUG] Implementar Exportar_PDF()")
-	
+
 
 
 def Tchau():
@@ -421,7 +356,7 @@ def ClicarGo():
 def ClicarShowSteps():
 
 	global firefox
-		
+	
 	try:
 		# Apertar "Show Steps"
 		wait01 = WebDriverWait(firefox, timeout).until(
@@ -433,7 +368,7 @@ def ClicarShowSteps():
 
 	except:
 		print("[DEBUG] Erro ao esperar Show Steps")
-		return False
+		
 		
 
 	finally:
@@ -441,19 +376,13 @@ def ClicarShowSteps():
 		time.sleep(3)
 
 
-	print("[DEBUG] Tentar clicar em Show Steps!")
+	print("[DEBUG] Clicar em Show Steps!")
 
 
 	try:
 		#clicar em Show Steps
-		
-		#implementar pra no caso de 1 ou 2 Show Steps
-		#testar expr = ln(1/x)
-		
-		show_steps_button = firefox.find_elements_by_class_name('show-steps-button')
+		show_steps_button = firefox.find_element_by_class_name('show-steps-button')
 
-		print("[DEBUG] show_step_button = " + str(show_step_button.text))
-			
 		actions = ActionChains(firefox)
 		actions.move_to_element(show_steps_button)
 		actions.click(show_steps_button)
@@ -540,11 +469,11 @@ def Fazer(equation, format):
 	go = ClicarGo()
 	
 	if (go == True):
-		print("[DEBUG] go = " + str(go))
+		print("go = " + str(go))
 		
 		
 	if (go == False):
-		print("[DEBUG] go = " + str(go))
+		print("go = " + str(go))
 		ClicarGo()
 	
 
@@ -553,11 +482,11 @@ def Fazer(equation, format):
 	showsteps = ClicarShowSteps()
 	
 	if (showsteps == True):
-		print("[DEBUG] showsteps = " + str(showsteps))
+		print("showsteps = " + str(showsteps))
 		
 	if (showsteps == False):
-		print("[DEBUG] showsteps = " + str(showsteps))
-		showsteps = ClicarShowSteps()	
+		print("showsteps = " + str(showsteps))
+		ClicarShowSteps()	
 
 
 	# Esperar ate os calculos aparecerem...
@@ -609,7 +538,7 @@ def Fazer(equation, format):
 	print("\n\n zzz \n\n")
 
 	CorrigirResolucao(math_type)
-	#Debug_MostraResolucao() #comentar depois
+	Debug_MostraResolucao() #comentar depois
 
 	#----------------------------------------------
 
@@ -638,18 +567,11 @@ def Fazer(equation, format):
 	#Grafico()
 
 	# exportar tudo pra TeX e depois PDF
-	#Exportar_TeX()
+	Exportar_TeX()
 
-	#Exportar_PDF()
+	Exportar_PDF()
 
-	print("[DEBUG] ConstruirPagina(resolucao_steps)")
-	#time.sleep(3)
 
-	ConstruirPagina(resolucao_steps)
-	
-	#abrir arquivo PDF
-	os.system("open pdf.pdf")
-	
 	# desligar navegador
 	Tchau()
 
