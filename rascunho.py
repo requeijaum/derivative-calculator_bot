@@ -37,7 +37,38 @@ from io import StringIO, BytesIO
 
 #----------------------------------------
 
+# implementar multiplas questoes na mesma janela
+
+class Questao:
+	"Uma questao com muitas coisas dentro"
+	questoes_contador = 0
+
+	#def __call__(self):
+	#	return self
+
+	def __init__(self, numero, questao, resolucao): #simplificacao, grafico, link, raizes)
+		self.numero = numero
+		self.questao = questao
+		self.resolucao = resolucao
+		Questao.questoes_contador += 1
+		
+	
+	def contador(self):
+		print("[DEBUG] Numero de questoes = " + Questao.questoes_contador)	
+		
+
+	def mostrar(self):
+		print("questao = " + self.questao)
+		print("numero = " + str(self.numero) + ", \nResolucao = " + self.resolucao + " \n")
+		
+#fim de class Questao()
+
+#------------------------------------------
+
 # VARIÁVEIS GLOBAIS
+
+global repetir
+repetir = 0
 
 global resolucao_steps
 global expressao
@@ -66,6 +97,11 @@ showsteps = False
 global go
 go = False
 
+global tratado
+tratado = []
+
+global q_list
+q_list = []
 
 #----------------------------------------
 
@@ -81,19 +117,21 @@ def LimparTela():
 def DesceJanelaUmPouco(num):
 	global firefox
 
-	result = firefox.find_element_by_id("result-text")
+	#result = firefox.find_element_by_id("result-text")
 
 	# Tirar bug caso o mouse clique em algum lugar fora da visualizacao
 	# Parece que descer teclas buga tudo - foda-se
-	print("[DEBUG] Descer a tela...")
-	actions = ActionChains(firefox)
+	print("[DEBUG] Descer a tela..." + str(num))
+	'''
 	for i in range(0, num) :
 		actions = ActionChains(firefox)
 		#actions.move_to_element(result)
 		actions.click(result)
-		actions.key_down(Keys.SPACE)
+		actions.key_down(Keys.ARROW_DOWN)
 		actions.perform()
-
+	'''
+	
+	firefox.execute_script(window.scrollTo((document.body.scrollWidth/2),(document.body.scrollHeight)/4))
 #fim de DesceJanelaUmPouco()
 
 
@@ -369,7 +407,7 @@ def ConstruirPagina(lista):
 
 	pdf = texcaller.convert(latex, "LaTeX", "PDF", 5)
 
-	nome_arquivo_pdf = "pdf.pdf"
+	nome_arquivo_pdf = ("").join(["pdf",str(i),".pdf"])
 	f_pdf = open(nome_arquivo_pdf , "wb")
 
 	#print(str(f_pdf))
@@ -449,9 +487,12 @@ def ClicarShowSteps():
 
 
 	print("[DEBUG] Esperar antes de apertar Show Steps")
-	time.sleep(3)
+	time.sleep(5)
 
-	#DesceJanelaUmPouco(3)
+	#DesceJanelaUmPouco(2)
+	
+	actions = ActionChains(firefox)
+	actions.send_keys(Keys.END + Keys.PAGE_UP + Keys.PAGE_UP)
 
 	print("[DEBUG] Tentar clicar em Show Steps!")
 
@@ -479,34 +520,18 @@ def ClicarShowSteps():
 	#	print("[DEBUG] Erro ao clicar em Show Steps!")
 	#	return False
 				
-				
-
-		
-
-
-	
+			
 #fim de ClicarShowSteps()	
 
-#------------------------------------------
+#----------------=======================------------=================--------------
 
-# ROTINA PRINCIPAL
 
-#DEBUG selecionar modo
-@click.command()
-@click.option('--equation', prompt='Equation', help='Equation to convert')
-@click.option('--format', type=click.Choice(output_formats), prompt='Output Format', help='Equation processing format')
-
-def Fazer(equation, format):
+def IniciarNavegador():
 
 	global bode
 	global firefox
-	global showsteps
-	global go
-	global actions
+
 	
-	
-	expressao = equation
-	math_type = format
 
 	#Selecionar navegador - GeckoDriver (FIREFOX)!
 	print("\n\nIniciando...\n\n")
@@ -524,20 +549,99 @@ def Fazer(equation, format):
 	firefox = webdriver.Firefox(firefox_profile=bot_profile, timeout=timeout, log_path="/tmp/geckolog.log")
 
 	# setar tamanho legal pra visualizar a janela
-	firefox.set_window_size(1280,720)
+	firefox.set_window_size(1440,900)
 	print("[DEBUG] " + str(firefox.get_window_size()))
 	#setar posicao da janela?
 
 
 	#try:
-	firefox.get('http://www.derivative-calculator.net/')
+	firefox.get('http://www.derivative-calculator.net/#expr=')
 	#usando meu proxy
 
 	#except TimeoutException:
 	#	print("[DEBUG] Esperou a página carregar, mas deu timeout")
 
-
 	print("[DEBUG] Carregou Pagina!")
+	time.sleep(3)
+
+	
+	for i in range(0, 4) :  # seria melhor send_keys?
+		html = firefox.find_element_by_xpath('//html')
+		
+		#diferença entre Mac e Windows
+		#html.send_keys(Keys.CONTROL + Keys.SUBTRACT)
+		#html.send_keys(Keys.COMMAND + Keys.SUBTRACT)
+		
+		#actions.key_down(Keys.CONTROL).key_down(Keys.SUBTRACT)
+		#actions.perform()
+		
+		time.sleep(1)
+		
+		#actions.key_up(Keys.CONTROL).key_up(Keys.SUBTRACT)
+		#actions.perform()
+		
+		#time.sleep(1)
+		
+	
+	#firefox.execute_script()
+	
+	print("[DEBUG] Diminuir zoom da página - hack maravilhoso")
+	
+	bode = firefox.find_element_by_xpath('//html')
+
+
+#fim de IniciarNavegador()
+
+def AbrirArquivo():
+
+	global tratado
+
+	# abrir arquivo
+	f = open("questoes_utf8.txt", "r", encoding="ascii")
+	questoes = f.readlines()
+	f.close()
+
+
+	#tratar linhas em branco antes ou depois?
+	for i in range(0, len(questoes)):
+		if questoes[i] == "\n":
+			print("")
+		
+		else:
+			tratado.append(questoes[i].strip("\n"))	
+
+
+	print("\n[DEBUG] " + str(tratado) + "\n\n")
+
+#fim de AbrirArquivo()
+
+def AbrirPDF():
+	for i in  range(0, len(tratado)):
+		#abrir arquivo PDF
+		comando = ("").join(["open ","pdf",str(i),".pdf"])
+		os.system(comando)
+
+
+#------------------------------------------
+
+# ROTINA PRINCIPAL
+
+#DEBUG selecionar modo
+#@click.command()
+#@click.option('--equation', prompt='Equation', help='Equation to convert')
+#@click.option('--format', type=click.Choice(output_formats), prompt='Output Format', help='Equation processing format')
+
+def Fazer(i):
+
+	global bode
+	global firefox
+	global showsteps
+	global go
+	global actions
+	
+	
+	expressao = tratado[i]
+	math_type = "tex"
 
 	#seria bom diminuir o zoom da página?
 	#enviar Ctrl + minus  3 vezes
@@ -554,12 +658,20 @@ def Fazer(equation, format):
 
 	#expressao = "ln(x/2)"
 
-	# Digitar "Python Club" no campo de busca
+	CLR = firefox.find_element_by_id('clear-expression-button')
+
+	#apagar exrpessao anterior
+	actions = ActionChains(firefox)
+	actions.move_to_element(CLR).click(CLR).click(CLR).click(CLR).perform()
+	
+	#campo_expressao.send_keys(Keys.DELETE)
+	
+	#enviar expressao
 	campo_expressao.send_keys(expressao)
 	print("[DEBUG] Enviou expressao!")
 
 	#https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
-	bode = firefox.find_element_by_xpath("//body")
+	#bode = firefox.find_element_by_xpath("//body")
 	#print(str(bode))
 	
 	# Simular que o enter seja precisonado
@@ -632,7 +744,7 @@ def Fazer(equation, format):
 	#touch.perform()
 
 	#https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
-	bode = firefox.find_element_by_xpath('//body')
+	#bode = firefox.find_element_by_xpath('//body')
 
 	#DesceJanelaUmPouco(3)
 
@@ -682,10 +794,17 @@ def Fazer(equation, format):
 	ConstruirPagina(resolucao_steps)
 	
 	#abrir arquivo PDF
-	os.system("open pdf.pdf")
+	#comando = ("").join(["open ","pdf",str(i),".pdf"])
+	#os.system(comando)
 	
-	# desligar navegador
-	Tchau()
+	#rolar para o topo da página
+	print("\n[DEBUG] rolar para o topo da página!\n")
+	actions = ActionChains(firefox)
+	#actions.move_to_element(show_steps_button)
+	actions.click(firefox.find_element_by_class_name("calc-header"))
+	actions.send_keys(Keys.HOME)
+	actions.perform()
+	
 
 
 #----------------------------------------
@@ -693,8 +812,29 @@ def Fazer(equation, format):
 #fim de Fazer()
 
 if __name__ == '__main__' :
+
 	LimparTela()
-	Fazer()
+	IniciarNavegador()
+	AbrirArquivo()
+	
+	for i in range(0, len(tratado)):
+		Fazer(i)
+	
+	'''
+		while (repetir == 0):
+		
+			try: 
+				Fazer(i)
+				repetir = 0
+			
+			except:
+				print("[DEBUG] Fazer("+str(i)+") deu erro... repetindo")
+				repetir = 1
+	'''
+	
+	AbrirPDF()	
+	Tchau()
+
 
 
 

@@ -1,5 +1,11 @@
 arctan(ln(tg(5x-1)))
 
+sin(sqrt(e^x + a) / 2)
+
 ln(x/2)
 
-sin(x) * arctan(800/23x)
+ln(1/x)
+
+sin(cos(3x))
+
+log(10(sin(x^2)))
