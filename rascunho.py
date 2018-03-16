@@ -52,13 +52,20 @@ global output_formats
 output_formats = ['tex', 'mathml']
 
 global bode
-bode = ""
+bode = None
 
 global calculos_element
 calculos_element = ""
 
 global firefox
 firefox = ""
+
+global showsteps
+showsteps = False
+
+global go
+go = False
+
 
 #----------------------------------------
 
@@ -72,13 +79,20 @@ def LimparTela():
 
 
 def DesceJanelaUmPouco(num):
-	global bode
-	
+	global firefox
+
+	result = firefox.find_element_by_id("result-text")
+
 	# Tirar bug caso o mouse clique em algum lugar fora da visualizacao
 	# Parece que descer teclas buga tudo - foda-se
 	print("[DEBUG] Descer a tela...")
+	actions = ActionChains(firefox)
 	for i in range(0, num) :
-		bode.send_keys(u'\ue015')
+		actions = ActionChains(firefox)
+		#actions.move_to_element(result)
+		actions.click(result)
+		actions.key_down(Keys.SPACE)
+		actions.perform()
 
 #fim de DesceJanelaUmPouco()
 
@@ -358,8 +372,8 @@ def ConstruirPagina(lista):
 	nome_arquivo_pdf = "pdf.pdf"
 	f_pdf = open(nome_arquivo_pdf , "wb")
 
-	print(str(f_pdf))
-	print(len(pdf))
+	#print(str(f_pdf))
+	#print(len(pdf))
 	#print(str(pdf))
 
 	pdf = pdf[0].encode("utf-8", "surrogateescape")
@@ -400,11 +414,13 @@ def Tchau():
 def ClicarGo():
 
 	global firefox
+	global actions
 
 	try:
 		go_button = firefox.find_element_by_id('go')
 
 		actions = ActionChains(firefox)
+		actions.key_down(Keys.SPACE)
 		actions.move_to_element(go_button)
 		actions.click(go_button)
 		actions.perform()
@@ -420,52 +436,54 @@ def ClicarGo():
 
 def ClicarShowSteps():
 
+	global bode
 	global firefox
+	global actions
 		
-	try:
-		# Apertar "Show Steps"
-		wait01 = WebDriverWait(firefox, timeout).until(
+	#try:
+	# Apertar "Show Steps"
+	wait02 = WebDriverWait(firefox, timeout).until(
+		#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
+		EC.element_to_be_clickable((By.CLASS_NAME, "show-steps-button"))
+	)
 
-			#EC.presence_of_element_located((By.CLASS_NAME, "show-steps-button"))
 
-			EC.element_to_be_clickable((By.CLASS_NAME, "show-steps-button"))
-		)
+	print("[DEBUG] Esperar antes de apertar Show Steps")
+	time.sleep(3)
 
-	except:
-		print("[DEBUG] Erro ao esperar Show Steps")
-		return False
-		
-
-	finally:
-		print("[DEBUG] Esperar antes de apertar Show Steps")
-		time.sleep(3)
-
+	#DesceJanelaUmPouco(3)
 
 	print("[DEBUG] Tentar clicar em Show Steps!")
 
+	#clicar em Show Steps
 
-	try:
-		#clicar em Show Steps
+	#implementar pra no caso de 1 ou 2 Show Steps
+	#testar expr = ln(1/x)
+
+	show_steps_button = None
+	show_steps_button = firefox.find_element_by_class_name("show-steps-button")
+
+	print("[DEBUG] --> show_step_button = " + str(show_steps_button))
+	print("[DEBUG] --> show_step_button = " + str(show_steps_button.get_attribute("innerHTML")))
+	
+	actions = ActionChains(firefox)
+	#actions.move_to_element(show_steps_button)
+	actions.click(show_steps_button)
+	actions.perform()
+
+	print("[DEBUG] Show Steps clicado!")
+	return True
+
+
+	#except:
+	#	print("[DEBUG] Erro ao clicar em Show Steps!")
+	#	return False
+				
+				
+
 		
-		#implementar pra no caso de 1 ou 2 Show Steps
-		#testar expr = ln(1/x)
-		
-		show_steps_button = firefox.find_elements_by_class_name('show-steps-button')
 
-		print("[DEBUG] show_step_button = " + str(show_step_button.text))
-			
-		actions = ActionChains(firefox)
-		actions.move_to_element(show_steps_button)
-		actions.click(show_steps_button)
-		actions.perform()
 
-		print("[DEBUG] Show Steps clicado!")
-		return True
-		
-
-	except:
-		print("[DEBUG] Erro ao clicar em Show Steps!")
-		return False
 	
 #fim de ClicarShowSteps()	
 
@@ -482,6 +500,9 @@ def Fazer(equation, format):
 
 	global bode
 	global firefox
+	global showsteps
+	global go
+	global actions
 	
 	
 	expressao = equation
@@ -489,9 +510,18 @@ def Fazer(equation, format):
 
 	#Selecionar navegador - GeckoDriver (FIREFOX)!
 	print("\n\nIniciando...\n\n")
+
+	#criar perfil
+	bot_profile = webdriver.firefox.firefox_profile.FirefoxProfile(profile_directory="./profile/")
 	
+	bot_profile.set_preference("network.proxy.type", 1)
+	bot_profile.set_preference("network.proxy.http", "127.0.0.1")
+	bot_profile.set_preference("network.proxy.http.port", int(8080))
+	bot_profile.update_preferences()
+	
+			
 	print("[DEBUG] webdriver.Firefox()")
-	firefox = webdriver.Firefox(timeout=timeout, log_path="/tmp/geckolog.log")
+	firefox = webdriver.Firefox(firefox_profile=bot_profile, timeout=timeout, log_path="/tmp/geckolog.log")
 
 	# setar tamanho legal pra visualizar a janela
 	firefox.set_window_size(1280,720)
@@ -500,8 +530,8 @@ def Fazer(equation, format):
 
 
 	#try:
-	firefox.get('https://www.derivative-calculator.net/')
-
+	firefox.get('http://www.derivative-calculator.net/')
+	#usando meu proxy
 
 	#except TimeoutException:
 	#	print("[DEBUG] Esperou a página carregar, mas deu timeout")
@@ -527,6 +557,10 @@ def Fazer(equation, format):
 	# Digitar "Python Club" no campo de busca
 	campo_expressao.send_keys(expressao)
 	print("[DEBUG] Enviou expressao!")
+
+	#https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
+	bode = firefox.find_element_by_xpath("//body")
+	#print(str(bode))
 	
 	# Simular que o enter seja precisonado
 	# ou seria melhor clicar em "GO!"
@@ -537,27 +571,29 @@ def Fazer(equation, format):
 	#parece que clicar em qualquer coisa na tela, desbuga a view
 	#implementar depois
 	
-	go = ClicarGo()
+
+	clicou_go    = 0
+	clicou_steps = 0
 	
-	if (go == True):
+	while (clicou_go < 3):
+		go = ClicarGo()	
+		clicou_go += 1
+		
+		if (go == True):
+			clicou_go = 3
+	
 		print("[DEBUG] go = " + str(go))
 		
-		
-	if (go == False):
-		print("[DEBUG] go = " + str(go))
-		ClicarGo()
-	
 
-	# Implementar Wait para identificar os botões depois de ter enviado expressão
-
-	showsteps = ClicarShowSteps()
 	
-	if (showsteps == True):
+	while (clicou_steps < 3):
+		showsteps = ClicarShowSteps()
+		clicou_steps += 1
+			
+		if (showsteps == True):
+			clicou_steps = 3
+	
 		print("[DEBUG] showsteps = " + str(showsteps))
-		
-	if (showsteps == False):
-		print("[DEBUG] showsteps = " + str(showsteps))
-		showsteps = ClicarShowSteps()	
 
 
 	# Esperar ate os calculos aparecerem...
@@ -572,9 +608,8 @@ def Fazer(equation, format):
 
 	finally:
 		print("[DEBUG] Esperar antes de obter calculos...")
+		time.sleep(esperar)
 
-
-	time.sleep(esperar)
 
 	# Capturar dados de resultado para objeto Selenium
 	#calculos_element = firefox.find_element_by_class_name("calc-content")
@@ -599,14 +634,14 @@ def Fazer(equation, format):
 	#https://stackoverflow.com/questions/30937153/selenium-send-keys-what-element-should-i-use
 	bode = firefox.find_element_by_xpath('//body')
 
-	DesceJanelaUmPouco(7)
+	#DesceJanelaUmPouco(3)
 
 	#fim do for loop
 
 	Resolucao(math_type)
-	Debug_MostraResolucao() #comentar depois
+	#Debug_MostraResolucao() #comentar depois
 
-	print("\n\n zzz \n\n")
+	#print("\n\n zzz \n\n")
 
 	CorrigirResolucao(math_type)
 	#Debug_MostraResolucao() #comentar depois
@@ -642,9 +677,8 @@ def Fazer(equation, format):
 
 	#Exportar_PDF()
 
-	print("[DEBUG] ConstruirPagina(resolucao_steps)")
+	print("\n[DEBUG] ConstruirPagina(resolucao_steps)")
 	#time.sleep(3)
-
 	ConstruirPagina(resolucao_steps)
 	
 	#abrir arquivo PDF
