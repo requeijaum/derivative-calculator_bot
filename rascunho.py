@@ -461,12 +461,13 @@ def ClicarShowSteps():
 
 		print("[DEBUG] Show Steps clicado!")
 		return True
+		
 
 	except:
 		print("[DEBUG] Erro ao clicar em Show Steps!")
 		return False
 	
-	
+	GPG é foda!
 #fim de ClicarShowSteps()	
 
 #------------------------------------------
