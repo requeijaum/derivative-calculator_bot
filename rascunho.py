@@ -467,7 +467,6 @@ def ClicarShowSteps():
 		print("[DEBUG] Erro ao clicar em Show Steps!")
 		return False
 	
-	GPG é foda!
 #fim de ClicarShowSteps()	
 
 #------------------------------------------
