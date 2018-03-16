@@ -1,0 +1,5 @@
+arctan(ln(tg(5x-1)))
+
+ln(x/2)
+
+sin(x) * arctan(800/23x)
